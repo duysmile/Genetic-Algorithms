@@ -32,7 +32,7 @@ public class Seller {
     public Seller(){
         randomInit();
         InitialPopulation();
-        for (int i = 0; i < 100; i++){
+        for (int i = 0; i < 1000; i++){
             FitnessFunction();
             Print();
             Selection();
@@ -46,7 +46,7 @@ public class Seller {
         for (int i = 0; i < cityAmount; i++) {
             for (int j = 0; j < cityAmount; j++) {
                 if (i == j){
-                    distance[i][j] = 0;
+                    distance[i][j] = Integer.MAX_VALUE;
                 } else if (j < i){
                     distance[i][j] = distance[j][i];
                 } else {
@@ -65,7 +65,7 @@ public class Seller {
         for (int i = 0; i < N; i++){
             int totalDistance = 0;
             for (int j = 0; j < cityAmount; j++){
-                totalDistance += distance[population[i][j] - 1][population[i][(j + 1) % 100] - 1];
+                totalDistance += distance[population[i][j] - 1][population[i][(j + 1) % cityAmount] - 1];
             }
             evaluate[i] = totalDistance;
         }
@@ -83,9 +83,7 @@ public class Seller {
 //                        System.out.print(" - ");
                     }
                 }
-//                System.out.println(".");
-//                System.out.println("Total Distance: " + best);
-                System.out.println(best);
+                System.out.println(evaluate[i]);
                 break;
             }
         }
@@ -97,14 +95,13 @@ public class Seller {
         int threshold = tmp[N * 80 / 100];
         for (int i = 0; i < N; i++){
             if (evaluate[i] >= threshold){
-                population[i] = population[rand.nextInt(cityAmount)].clone();
+                population[i] = population[rand.nextInt(N)].clone();
             }
         }
     }
     
-    private int[] CrossoverDetail(int [] father, int [] mother){
+    private int[] CrossoverDetail(int [] father, int [] mother, int position){
         int []tmp = new int[cityAmount];
-        int position = rand.nextInt(cityAmount);
         int x = 0;
         int [] inProgress = new int[cityAmount];
         while (x < cityAmount){
@@ -116,11 +113,11 @@ public class Seller {
                     tmp[x] = -1;
                 } else {
                     tmp[x] = mother[x];
+                    inProgress[mother[x] - 1] = 1;
                 }
             }
             x++;
         }
-
         int j = 0;
         int k = 0;
         while (j < cityAmount && k < cityAmount){
@@ -128,7 +125,7 @@ public class Seller {
             while (j < cityAmount && tmp[j] != -1) {
                 j++;
             }
-            if (j >= cityAmount){
+            if (k >= cityAmount){
                 break;
             }
             tmp[j] = k + 1;
@@ -144,8 +141,9 @@ public class Seller {
             int mother = rand.nextInt(N);
             int [] tmpFather = population[father].clone();
             int [] tmpMother = population[mother].clone();
-            population[father] = CrossoverDetail(tmpFather, tmpMother);
-            population[mother] = CrossoverDetail(tmpMother, tmpFather);
+            int position = rand.nextInt(cityAmount);
+            population[father] = CrossoverDetail(tmpFather, tmpMother, position);
+            population[mother] = CrossoverDetail(tmpMother, tmpFather, position);
         }
     }
 
